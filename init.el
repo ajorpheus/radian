@@ -66,9 +66,11 @@
       '(
         ace-jump-mode ; quickly jump to words, characters, or lines onscreen
         aggressive-indent ; keep code correctly indented at all times
+        anaconda-mode ; integrated development environment for Python
         cider ; Clojure REPL integration
         clojure-mode ; Clojure indentation and syntax highlighting
         company ; autocompletion with pop-up menu
+        company-anaconda ; Company integration for anaconda-mode
         company-statistics ; sort Company completions by usage
         geiser ; support for Racket
         helm ; better interface for selecting files, buffers, or commands
@@ -579,7 +581,7 @@ M-RET to the file opened by the resulting keybinding.")
   (global-set-key (kbd "C-c C-SPC") 'ace-jump-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; Package: Company (and company-statistics)
+;;;; Package: Company (and company-statistics and company-anaconda)
 
 (when (member 'company radian-packages)
 
@@ -679,7 +681,23 @@ M-RET to the file opened by the resulting keybinding.")
   (when (member 'company-statistics radian-packages)
 
     ;; Turn on company-statistics if available.
-    (company-statistics-mode 1)))
+    (company-statistics-mode 1))
+
+  (when (member 'company-anaconda radian-packages)
+
+    ;; Enable company-anaconda, so that we get good autocompletion
+    ;; suggestions for Python code.
+    (add-to-list 'company-backends 'company-anaconda)
+
+    ;; Add a space between the completion candidates and the
+    ;; chevron-enclosed description, so the completions menu doesn't
+    ;; look so crowded.
+    (setq company-anaconda-annotation-function
+          (lambda (candidate)
+            (concat
+             " "
+             (company-anaconda-description-in-chevrons
+              candidate))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Package: Aggressive Indent
@@ -895,6 +913,17 @@ M-RET to the file opened by the resulting keybinding.")
   (require 'figwheel-sidecar.repl-api)
   (figwheel-sidecar.repl-api/start-figwheel!)
   (figwheel-sidecar.repl-api/cljs-repl))"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Package: anaconda-mode
+
+(when (member 'anaconda-mode radian-packages)
+
+  ;; Enable anaconda-mode in Python buffers.
+  (add-hook 'python-mode-hook 'anaconda-mode)
+
+  ;; Also enable anaconda-mode's version of ElDoc.
+  (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Package: markdown-toc
